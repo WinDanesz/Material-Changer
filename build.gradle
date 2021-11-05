@@ -12,8 +12,8 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 
 version = "1.0"
-group = "com.yourname.modid" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "modid"
+group = "java.de.lellson.materialchanger" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "materialchanger"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -73,5 +73,42 @@ processResources {
     // copy everything else except the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+def getBuildNumber() {
+    if (System.getenv("BUILD_NUMBER") != null) {
+        return System.getenv("BUILD_NUMBER").toString()
+    }
+    return ""
+}
+
+def getStable() {
+    if (isUnstable()) {
+        return "unstable"
+    }
+    return ""
+}
+
+def isUnstable() {
+    return (System.getenv("GITHUB_REF") == null || System.getenv("GITHUB_REF").endsWith("-dev"));
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/TeamMFR/MineFantasyReforged"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId 'minefantasyreforged'
+            from(components.java)
+        }
     }
 }
